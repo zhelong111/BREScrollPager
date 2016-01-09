@@ -7,14 +7,20 @@ package com.etmay.brescrollpager.ui;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MyViewPager extends ViewGroup {
 
@@ -32,6 +38,11 @@ public class MyViewPager extends ViewGroup {
     private int childWidth;
     private int childHeight;
     private int childPadding = 160;
+    private float velocityX = 0;
+    private static final int MIN_SCROLL_VELOCITY = 4000;
+    private Timer timer; // 滚动定时器
+    private Handler handler;
+    private int timerIndex;
 
     public MyViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,6 +51,14 @@ public class MyViewPager extends ViewGroup {
     }
 
     private void init() {
+        timer = new Timer();
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                setCurrItem(timerIndex % getChildCount());
+            }
+        };
+
         myScroller = new MyScroller(ctx);
         detector = new GestureDetector(ctx,
                 new GestureDetector.OnGestureListener() {
@@ -68,6 +87,7 @@ public class MyViewPager extends ViewGroup {
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2,
                                            float velocityX, float velocityY) {
+                        MyViewPager.this.velocityX = velocityX;
                         return false;
                     }
 
@@ -124,21 +144,38 @@ public class MyViewPager extends ViewGroup {
                 break;
             case MotionEvent.ACTION_UP : // 抬起
                 int nextId = 0; // 记录下一个View的id
-                if (Math.abs(myScroller.getCurrVelocity()) > 600) {
-                    if (event.getX() - firstDownX > 60) {
+//                if (Math.abs(myScroller.getCurrVelocity()) > 600) {
+                Log.e("ss", "---------" + velocityX) ;
+                if (Math.abs(velocityX) > MIN_SCROLL_VELOCITY) {
+//                    if (event.getX() - firstDownX > 60) {
+//                        // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
+//                        nextId = (currId - 1) <= 0 ? 0 : currId - 1;
+//                    } else if (firstDownX - event.getX() > 60) {
+//                        // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
+//                        nextId = currId + 1;
+//                    } else {
+//                        nextId = currId;
+//                    }
+                    if (velocityX > MIN_SCROLL_VELOCITY) {
                         // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
                         nextId = (currId - 1) <= 0 ? 0 : currId - 1;
-                    } else if (firstDownX - event.getX() > 60) {
+                        if (nextId == currId - 1) {
+                            timerIndex--;
+                        }
+                    } else if (velocityX < -MIN_SCROLL_VELOCITY) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
                     } else {
                         nextId = currId;
                     }
                 } else {
-                    if (event.getX() - firstDownX > getWidth() / 7.0f) {
+                    if (event.getX() - firstDownX > getWidth() / 5.0f) {
                         // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
                         nextId = (currId - 1) <= 0 ? 0 : currId - 1;
-                    } else if (firstDownX - event.getX() > getWidth() / 7.0f) {
+                        if (nextId == currId - 1) {
+                            timerIndex--;
+                        }
+                    } else if (firstDownX - event.getX() > getWidth() / 5.0f) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
                     } else {
@@ -156,7 +193,7 @@ public class MyViewPager extends ViewGroup {
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-        Log.e("ss", "---------" + (getScrollX() - currId * getWidth())/(getWidth() * 1.0f) ) ;
+//        Log.e("ss", "---------" + (getScrollX() - currId * getWidth())/(getWidth() * 1.0f) ) ;
     }
 
     /**
@@ -197,6 +234,26 @@ public class MyViewPager extends ViewGroup {
 
         // 刷新视图
         invalidate();
+    }
+
+    public void setCurrItem(int itemIndex) {
+        moveToDest(itemIndex);
+    }
+
+    public void startSchedule(long timeMillis) {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                timerIndex++;
+                handler.sendEmptyMessage(0);
+            }
+        }, timeMillis, timeMillis);
+    }
+
+    public void stopSchecule() {
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     /**

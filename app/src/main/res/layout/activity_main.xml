@@ -5,6 +5,7 @@
     tools:context=".MainActivity">
 
     <com.etmay.brescrollpager.ui.MyViewPager
+        android:id="@+id/myPager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         >
