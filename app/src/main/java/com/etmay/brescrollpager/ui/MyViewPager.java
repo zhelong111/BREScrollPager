@@ -22,19 +22,16 @@ import com.nineoldandroids.view.ViewHelper;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Created by Bruce on 2016/1/9.
+ */
 public class MyViewPager extends ViewGroup {
 
-    /** 手势识别器 */
-    private GestureDetector detector;
-    /** 上下文 */
-    private Context ctx;
-    /** 第一次按下的X轴的坐标 */
-    private int firstDownX;
-    /** 记录当前View的id */
-    private int currId = 0;
-    /** 模拟动画工具 */
-    private MyScroller myScroller;
-
+    private GestureDetector detector; // 手势识别器
+    private Context ctx; // 上下文
+    private int firstDownX; // 第一次按下的X轴的坐标
+    private int currId = 0; // 记录当前View的index
+    private MyScroller myScroller; // 模拟动画工具
     private int childWidth;
     private int childHeight;
     private int childPadding = 160;
@@ -42,7 +39,10 @@ public class MyViewPager extends ViewGroup {
     private static final int MIN_SCROLL_VELOCITY = 4000;
     private Timer timer; // 滚动定时器
     private Handler handler;
-    private int timerIndex;
+    private int timerIndex; // 定时滚动到的view的index
+    private boolean isTouchedOn; // 手指是否停留在视图上
+    private long scrollInterval; // 定时滚动的周期ms
+    private boolean isScheduleScroll; // 是否设置了定时滚动page
 
     public MyViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -138,24 +138,22 @@ public class MyViewPager extends ViewGroup {
         // 还是得自己处理一些逻辑
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN : // 按下
+                isTouchedOn = true;
+                stopSchecule(); // 停止定时滚动
                 firstDownX = (int) event.getX();
+                velocityX = 0;
                 break;
             case MotionEvent.ACTION_MOVE : // 移动
                 break;
             case MotionEvent.ACTION_UP : // 抬起
+                isTouchedOn = false;
+                if (isScheduleScroll) {
+                    startSchedule(scrollInterval);
+                }
                 int nextId = 0; // 记录下一个View的id
 //                if (Math.abs(myScroller.getCurrVelocity()) > 600) {
                 Log.e("ss", "---------" + velocityX) ;
                 if (Math.abs(velocityX) > MIN_SCROLL_VELOCITY) {
-//                    if (event.getX() - firstDownX > 60) {
-//                        // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
-//                        nextId = (currId - 1) <= 0 ? 0 : currId - 1;
-//                    } else if (firstDownX - event.getX() > 60) {
-//                        // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
-//                        nextId = currId + 1;
-//                    } else {
-//                        nextId = currId;
-//                    }
                     if (velocityX > MIN_SCROLL_VELOCITY) {
                         // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
                         nextId = (currId - 1) <= 0 ? 0 : currId - 1;
@@ -165,6 +163,7 @@ public class MyViewPager extends ViewGroup {
                     } else if (velocityX < -MIN_SCROLL_VELOCITY) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
+                        timerIndex++;
                     } else {
                         nextId = currId;
                     }
@@ -178,6 +177,7 @@ public class MyViewPager extends ViewGroup {
                     } else if (firstDownX - event.getX() > getWidth() / 5.0f) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
+                        timerIndex++;
                     } else {
                         nextId = currId;
                     }
@@ -240,19 +240,29 @@ public class MyViewPager extends ViewGroup {
         moveToDest(itemIndex);
     }
 
-    public void startSchedule(long timeMillis) {
+    public void startSchedule(final long timeMillis) {
+        if (timer == null) {
+            timer = new Timer();
+        }
+        isScheduleScroll = true;
+        scrollInterval = timeMillis;
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                timerIndex++;
-                handler.sendEmptyMessage(0);
+                if (!isTouchedOn) { // 手指没有按住屏幕
+                    timerIndex++;
+                    handler.sendEmptyMessage(0); // 发送滚动消息
+                }
             }
-        }, timeMillis, timeMillis);
+        }, scrollInterval, scrollInterval);
     }
 
     public void stopSchecule() {
-        if (timer != null) {
-            timer.cancel();
+        if (isScheduleScroll) {
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package com.etmay.brescrollpager;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-
 import com.etmay.brescrollpager.ui.MyViewPager;
 
 
