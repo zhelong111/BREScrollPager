@@ -163,7 +163,9 @@ public class MyViewPager extends ViewGroup {
                     } else if (velocityX < -MIN_SCROLL_VELOCITY) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
-                        timerIndex++;
+                        if (nextId < getChildCount() - 1) {
+                            timerIndex++;
+                        }
                     } else {
                         nextId = currId;
                     }
@@ -177,7 +179,9 @@ public class MyViewPager extends ViewGroup {
                     } else if (firstDownX - event.getX() > getWidth() / 5.0f) {
                         // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
-                        timerIndex++;
+                        if (nextId < getChildCount() - 1) {
+                            timerIndex++;
+                        }
                     } else {
                         nextId = currId;
                     }
