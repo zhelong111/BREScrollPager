@@ -1,12 +1,17 @@
 package com.etmay.brescrollpager.ui;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+import android.util.AttributeSet;
 import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
+import android.view.animation.BaseInterpolator;
 import android.view.animation.Interpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.OverScroller;
 
 /**
@@ -94,7 +99,7 @@ public class MyScroller  {
 
 //    private float mFlingFriction = ViewConfiguration.getScrollFriction();
     private float mFlingFriction = 0.01f;
-    private static final int DEFAULT_DURATION = 450;
+    private static final int DEFAULT_DURATION = 450; // 滚动速度
     private static final int SCROLL_MODE = 0;
     private static final int FLING_MODE = 1;
 
@@ -173,9 +178,9 @@ public class MyScroller  {
     public MyScroller(Context context, Interpolator interpolator, boolean flywheel) {
         mFinished = true;
         if (interpolator == null) {
-            mInterpolator = new LinearOutSlowInInterpolator();
+//            mInterpolator = new LinearOutSlowInInterpolator();
 //            mInterpolator = new DecelerateInterpolator();
-//            mInterpolator = new OvershootInterpolator();
+            mInterpolator = new OvershootInterpolator(1);
         } else {
 //            mInterpolator = interpolator;
             mInterpolator = new LinearOutSlowInInterpolator();
