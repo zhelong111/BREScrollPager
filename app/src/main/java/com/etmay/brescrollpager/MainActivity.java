@@ -1,16 +1,12 @@
 package com.etmay.brescrollpager;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewAnimationUtils;
-import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
-import com.etmay.brescrollpager.tool.DensityUtil;
 import com.etmay.brescrollpager.ui.MyViewPager;
-import com.nineoldandroids.view.ViewHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,11 +21,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         mPager = (MyViewPager) findViewById(R.id.myPager);
-        mPager.startSchedule(1400);
+//        mPager.startSchedule(1400);
 
         for (int i = 0; i < 100; i++) {
             ImageView iv = new ImageView(this);
             iv.setImageResource(R.mipmap.g3);
+            iv.setTag(i);
             mPager.addView(iv);
         }
 
@@ -59,7 +56,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        mPager.setOnItemClickListener(new MyViewPager.OnItemClickListener() {
+            @Override
+            public void onItemClicked(View itemView, int position) {
+                Toast.makeText(MainActivity.this, position + "", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -67,4 +69,5 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         mPager.stopSchecule();
     }
+
 }

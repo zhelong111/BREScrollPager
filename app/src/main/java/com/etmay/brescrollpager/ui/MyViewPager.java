@@ -48,6 +48,11 @@ public class MyViewPager extends ViewGroup {
     private float initScaleX;
     private float initScaleY;
     private float initAlpha = 0.5f;
+    private OnItemClickListener onItemClickListener;
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
 
     public void setPagerTransformer(PageTransformer pagerTransformer) {
         this.pagerTransformer = pagerTransformer;
@@ -57,6 +62,10 @@ public class MyViewPager extends ViewGroup {
         super(context, attrs);
         this.ctx = context;
         init();
+    }
+
+    public interface OnItemClickListener {
+        void onItemClicked(View itemView, int position);
     }
 
     private void init() {
@@ -74,6 +83,9 @@ public class MyViewPager extends ViewGroup {
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
+                        if (onItemClickListener != null) {
+                            onItemClickListener.onItemClicked(getChildAt(getCurrItem()), getCurrItem());
+                        }
                         return false;
                     }
 
