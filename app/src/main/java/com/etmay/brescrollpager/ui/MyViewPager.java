@@ -36,16 +36,18 @@ public class MyViewPager extends ViewGroup {
     private int childHeight;
     private int childPadding = 160;
     private float velocityX = 0;
-    private static final int MIN_SCROLL_VELOCITY = 4000;
+    private static final int MIN_SCROLL_VELOCITY = 3000;
     private Timer timer; // 滚动定时器
     private Handler handler;
     private int timerIndex; // 定时滚动到的view的index
     private boolean isTouchedOn; // 手指是否停留在视图上
     private long scrollInterval; // 定时滚动的周期ms
     private boolean isScheduleScroll; // 是否设置了定时滚动page
-    private float deltaX; // 每一次滚动
     private float currTouchX; // 手指按下的位置
     private PageTransformer pagerTransformer;
+    private float initScaleX;
+    private float initScaleY;
+    private float initAlpha = 0.5f;
 
     public void setPagerTransformer(PageTransformer pagerTransformer) {
         this.pagerTransformer = pagerTransformer;
@@ -86,7 +88,9 @@ public class MyViewPager extends ViewGroup {
                         scrollBy((int) distanceX, 0);
                         if (pagerTransformer != null) {
                             int currChildIndex = (int) (currTouchX/childWidth);
-                            pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
+                            if (currChildIndex < getChildCount()) {
+                                pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
+                            }
                         }
                         Log.e("ss", "----onScroll-----  " + getOffset()) ;
                         return false;
@@ -105,11 +109,14 @@ public class MyViewPager extends ViewGroup {
 
                     @Override
                     public boolean onDown(MotionEvent e) {
-                        currTouchX = getScrollX();
+//                        currTouchX = getScrollX();
+                        // 必须点击位置相对屏幕左边的距离，防止连续滑动出现bug
+                        currTouchX = getScrollX() + e.getX() + getPaddingLeft()+1;
                         return false;
                     }
                 });
-    }
+
+    } // init
 
     /**
      * 获得当前View的偏移
@@ -130,6 +137,8 @@ public class MyViewPager extends ViewGroup {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         childWidth = getWidth() - childPadding - getPaddingLeft() - getPaddingRight();
         childHeight = getHeight() - 0 - getPaddingTop() - getPaddingBottom();
+        initScaleX = (childWidth - childPadding / 2f) / childWidth;
+        initScaleY = (childHeight - childPadding / 2f) / childHeight;
     }
 
     /**
@@ -142,19 +151,17 @@ public class MyViewPager extends ViewGroup {
         for (int i = 0; i < getChildCount(); i++) {
             View view = getChildAt(i);
 
-//            ViewHelper.setScaleX(view, ViewHelper.getScaleX(view) * .9f);
-//            ViewHelper.setScaleY(view, ViewHelper.getScaleY(view) * .9f);
-
             // 指定子View的位置 ，左、上、右、下，是指在ViewGroup坐标系中的位置
 
             int left = (getWidth() - childWidth)/2;
             int top = (getHeight() - childHeight)/2;
-            view.layout(left + i * childWidth , top, left + childWidth + i * childWidth ,
-                        top + childHeight);
+            view.layout(left + i * childWidth, top, left + childWidth + i * childWidth,
+                    top + childHeight);
 
             if (i != 0) {
-                ViewHelper.setScaleX(view, (childWidth - childPadding/2.0f) * 1.0f/childWidth );
-                ViewHelper.setScaleY(view, (childHeight - childPadding/2.0f) * 1.0f/childHeight );
+                ViewHelper.setScaleX(view, initScaleX);
+                ViewHelper.setScaleY(view, initScaleY);
+//                ViewHelper.setAlpha(view, initAlpha);
             }
         }
     }
@@ -170,14 +177,11 @@ public class MyViewPager extends ViewGroup {
                 stopSchecule(); // 停止定时滚动
                 firstDownX = (int) event.getX();
                 velocityX = 0;
-                deltaX = 0; // 按下时，x方向移动距离累计为0
-//                currTouchX = getScrollX();
                 break;
             case MotionEvent.ACTION_MOVE : // 移动
                 break;
             case MotionEvent.ACTION_UP : // 抬起
                 isTouchedOn = false;
-                deltaX = 0; // 清零本次x方向移动距离
                 if (isScheduleScroll) { // 手指离开屏幕时，若果设置了定时滚动，则重新滚动起来
                     startSchedule(scrollInterval);
                 }
@@ -186,13 +190,11 @@ public class MyViewPager extends ViewGroup {
                 Log.e("ss", "---------" + velocityX) ;
                 if (Math.abs(velocityX) > MIN_SCROLL_VELOCITY) {
                     if (velocityX > MIN_SCROLL_VELOCITY) {
-                        // 手指离开点的X轴坐标-firstDownX > 屏幕宽度的一半，左移
                         nextId = (currId - 1) <= 0 ? 0 : currId - 1;
                         if (nextId == currId - 1) {
                             timerIndex--;
                         }
                     } else if (velocityX < -MIN_SCROLL_VELOCITY) {
-                        // 手指离开点的X轴坐标 - firstDownX < 屏幕宽度的一半，右移
                         nextId = currId + 1;
                         if (nextId < getChildCount() - 1) {
                             timerIndex++;
@@ -224,46 +226,6 @@ public class MyViewPager extends ViewGroup {
         }
         return true;
     }
-
-
-//    private void update(int pos) {
-//        int currTouchedItem = (int)(currTouchX / childWidth);
-//        View child = getChildAt(currTouchedItem);
-//        final int scrollX = getScrollX();
-//        final float transformPos = (float) (child.getLeft() - scrollX) / childWidth;
-//
-//        float factor = transformPos/2;
-//        Log.e("ss", "transformPos=" + transformPos + ", currTouchX=" + currTouchX + ", childWidth=" + childWidth + ", scrollX=" + scrollX);
-////        if (Math.abs(deltaX) > 100) {
-//            ViewHelper.setAlpha(child, 1 - factor);
-////        }
-//
-//        Log.e("ss", "factor: " + factor + ", itemIndex:" + currTouchedItem + ", \ndeltaX: " + deltaX + ", childwidth:" + childWidth);
-//
-////        if (transformPos > 0) { // 右移
-////            if (currTouchedItem > 0) {
-////                // 左边view
-////                View leftView = getChildAt(currTouchedItem - 1);
-////                ViewHelper.setAlpha(leftView,  factor + 0.5f);
-////            }
-////            if (currTouchedItem < getChildCount() - 1) {
-////                // 右边view
-////                View rightView = getChildAt(currTouchedItem + 1);
-////                ViewHelper.setAlpha(rightView,  1 - factor);
-////            }
-////        } else if (transformPos < 0) { // 左移
-////            if (currTouchedItem < getChildCount() - 1) {
-////                // 右边view
-////                View rightView = getChildAt(currTouchedItem + 1);
-////                ViewHelper.setAlpha(rightView,  factor + 0.5f);
-////            }
-////            if (currTouchedItem > 0) {
-////                // 左边view
-////                View leftView = getChildAt(currTouchedItem - 1);
-////                ViewHelper.setAlpha(leftView,  1 - factor);
-////            }
-////        }
-//    }
 
     public int getCurrItem() {
         return (int)(currTouchX / childWidth);
@@ -297,8 +259,8 @@ public class MyViewPager extends ViewGroup {
         View child;
         if (shouldAnim) {
             child = getChildAt(currId);
-            ObjectAnimator.ofFloat(child, "scaleX", 1f, 0.9f).setDuration(300).start();
-            ObjectAnimator.ofFloat(child, "scaleY", 1f, 0.9f).setDuration(300).start();
+            ObjectAnimator.ofFloat(child, "scaleX", 1f, initScaleX).setDuration(300).start();
+            ObjectAnimator.ofFloat(child, "scaleY", 1f, initScaleY).setDuration(300).start();
         }
 
         // nextId的合理范围是，nextId >=0 && nextId <= getChildCount()-1
@@ -317,8 +279,8 @@ public class MyViewPager extends ViewGroup {
 
         if (shouldAnim) {
             child = getChildAt(currId);
-            ObjectAnimator.ofFloat(child, "scaleX", 0.9f, 1f).setDuration(300).start();
-            ObjectAnimator.ofFloat(child, "scaleY", 0.9f, 1f).setDuration(300).start();
+            ObjectAnimator.ofFloat(child, "scaleX", initScaleX, 1f).setDuration(300).start();
+            ObjectAnimator.ofFloat(child, "scaleY", initScaleY, 1f).setDuration(300).start();
         }
 
         // 刷新视图
@@ -364,10 +326,11 @@ public class MyViewPager extends ViewGroup {
             int newX = (int) myScroller.getCurrX();
             scrollTo(newX, 0);
 
-//            Log.e("ss", "----computeScroll-----  " + (getScrollX() - (currTouchX / childWidth) * childWidth) / (childWidth * 1.0f)) ;
             if (pagerTransformer != null) {
                 int currChildIndex = (int) (currTouchX/childWidth);
-                pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
+                if (currChildIndex < getChildCount()) {
+                    pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
+                }
             }
             Log.e("ss", "----computeScroll-----  " + getOffset()) ;
 

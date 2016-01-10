@@ -1,15 +1,11 @@
 package com.etmay.brescrollpager.ui;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.util.AttributeSet;
 import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
-import android.view.animation.BaseInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.OverScroller;
@@ -179,8 +175,7 @@ public class MyScroller  {
         mFinished = true;
         if (interpolator == null) {
 //            mInterpolator = new LinearOutSlowInInterpolator();
-//            mInterpolator = new DecelerateInterpolator();
-            mInterpolator = new OvershootInterpolator(1);
+            mInterpolator = new OvershootInterpolator(1.1f);
         } else {
 //            mInterpolator = interpolator;
             mInterpolator = new LinearOutSlowInInterpolator();
