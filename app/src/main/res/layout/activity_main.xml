@@ -5,6 +5,14 @@
     tools:context=".MainActivity"
     android:gravity="center_vertical">
 
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/root"/>
+
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/root2"/>
+
     <com.etmay.brescrollpager.ui.MyViewPager
         android:id="@+id/myPager"
         android:layout_width="match_parent"

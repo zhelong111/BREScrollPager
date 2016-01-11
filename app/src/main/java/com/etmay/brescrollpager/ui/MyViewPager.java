@@ -49,6 +49,11 @@ public class MyViewPager extends ViewGroup {
     private float initScaleY;
     private float initAlpha = 0.5f;
     private OnItemClickListener onItemClickListener;
+    private OnPageChangeListener onPageChangeListener;
+
+    public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
+        this.onPageChangeListener = onPageChangeListener;
+    }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
@@ -66,6 +71,10 @@ public class MyViewPager extends ViewGroup {
 
     public interface OnItemClickListener {
         void onItemClicked(View itemView, int position);
+    }
+
+    public interface OnPageChangeListener {
+        void onPageChanged(int position);
     }
 
     private void init() {
@@ -257,6 +266,16 @@ public class MyViewPager extends ViewGroup {
             return getChildAt(currItemIndex + 1);
         }
         return null;
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (currId != (getScrollX() + childPadding + childWidth) / childWidth) {
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageChanged(currId);
+            }
+        }
     }
 
     /**
