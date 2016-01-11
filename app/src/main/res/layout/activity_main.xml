@@ -2,32 +2,42 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:gravity="center_vertical">
 
     <com.etmay.brescrollpager.ui.MyViewPager
         android:id="@+id/myPager"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="380dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:background="#fff"
+        android:layout_centerVertical="true"
         >
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/g3"/>
+            android:src="@mipmap/g3"
+            android:scaleType="fitXY"
+            />
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/g3"/>
+            android:src="@mipmap/g3"
+            android:scaleType="fitXY"/>
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/g3"/>
+            android:src="@mipmap/g3"
+            android:scaleType="fitXY"/>
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/g3"/>
+            android:src="@mipmap/g3"
+            android:scaleType="fitXY"/>
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@mipmap/g3"/>
+            android:src="@mipmap/g3" />
     </com.etmay.brescrollpager.ui.MyViewPager>
 </RelativeLayout>
