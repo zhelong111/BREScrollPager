@@ -1,5 +1,6 @@
 # BREScrollPager
 自定义水平带缩放效果滚动列表
+
 V1.1.0.2<br/>
 1、新增OnItemClickListener
 
