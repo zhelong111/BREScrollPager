@@ -1,5 +1,6 @@
 # BREScrollPager
-自定义水平带缩放效果滚动列表
+自定义水平带缩放效果滚动列表<br/>
+<img src="https://github.com/zhelong111/BREScrollPager/blob/master/gif/test.gif"/>
 
 V1.1.0.2<br/>
 1、新增OnItemClickListener
@@ -14,3 +15,6 @@ V1.1<br/>
 V1.0<br/>
 1、添加任意View到BREScrollPager视图中<br/>
 2、自动横向排列并自定滑动动画效果
+
+
+ 
