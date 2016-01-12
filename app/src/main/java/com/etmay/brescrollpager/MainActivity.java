@@ -1,6 +1,7 @@
 package com.etmay.brescrollpager;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
             child.setTag(i);
             mPager.addView(child);
         }
+        mPager.setCurrItem(1);
+
         final int color = colors[0];
         final int dc = colors[1] - color;
         mPager.setPagerTransformer(new BREScrollPager.PageTransformer() {

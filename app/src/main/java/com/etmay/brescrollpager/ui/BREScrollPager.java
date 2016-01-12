@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -50,6 +51,9 @@ public class BREScrollPager extends ViewGroup {
     private float initAlpha = 0.5f;
     private OnItemClickListener onItemClickListener;
     private OnPageChangeListener onPageChangeListener;
+    private boolean hasLayoutOk;
+    private static final int MSG_SCHEDULE_NEXT_PAGE = 1; // 定时滚动到下一个页面
+    private static final int MSG_JUMP_TO = 2; // 跳转到指定页面
 
     public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
@@ -84,7 +88,18 @@ public class BREScrollPager extends ViewGroup {
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                setCurrItem(timerIndex % getChildCount());
+                switch (msg.what) {
+                    case MSG_SCHEDULE_NEXT_PAGE:
+                        setCurrItem(timerIndex % getChildCount());
+                        break;
+                    case MSG_JUMP_TO:
+                        int itemIndex = msg.arg1;
+                        setCurrItem(itemIndex);
+                        if (isScheduleScroll) {
+                            timerIndex = itemIndex;
+                        }
+                        break;
+                }
             }
         };
 
@@ -157,17 +172,14 @@ public class BREScrollPager extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int widthSpecSize =  MeasureSpec.getSize(widthMeasureSpec);
         int heightSpecSize =  MeasureSpec.getSize(heightMeasureSpec);
         setMeasuredDimension(widthSpecSize, heightSpecSize);
-
-        childWidth = getWidth() - childPadding - getPaddingLeft() - getPaddingRight();
-        childHeight = getHeight() - 0 - getPaddingTop() - getPaddingBottom();
-
         measureChildren(widthMeasureSpec - childPadding, heightMeasureSpec);
         setMeasuredDimension(widthSpecSize, heightSpecSize);
+        childWidth = getWidth() - childPadding - getPaddingLeft() - getPaddingRight();
+        childHeight = getHeight() - 0 - getPaddingTop() - getPaddingBottom();
         initScaleX = (childWidth - childPadding / 2f) / childWidth;
         initScaleY = (childHeight - childPadding / 2f) / childHeight;
     }
@@ -193,6 +205,7 @@ public class BREScrollPager extends ViewGroup {
 //                ViewHelper.setAlpha(view, initAlpha);
             }
         }
+        hasLayoutOk = true;
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -326,8 +339,22 @@ public class BREScrollPager extends ViewGroup {
         invalidate();
     }
 
-    public void setCurrItem(int itemIndex) {
-        moveToDest(itemIndex);
+    public void setCurrItem(final int itemIndex) {
+        if (!hasLayoutOk) {
+            new Thread() {
+                @Override
+                public void run() {
+                    SystemClock.sleep(120);
+                    Message msg = Message.obtain();
+                    msg.what = MSG_JUMP_TO;
+                    msg.arg1 = itemIndex;
+                    handler.sendMessage(msg);
+                }
+            }.start();
+        } else {
+            moveToDest(itemIndex);
+        }
+        //         moveToDest(itemIndex);
     }
 
     public void startSchedule(final long timeMillis) {
@@ -341,7 +368,9 @@ public class BREScrollPager extends ViewGroup {
             public void run() {
                 if (!isTouchedOn) { // 手指没有按住屏幕
                     timerIndex++;
-                    handler.sendEmptyMessage(0); // 发送滚动消息
+                    Message msg = Message.obtain();
+                    msg.what = MSG_SCHEDULE_NEXT_PAGE;
+                    handler.sendMessage(msg);
                 }
             }
         }, scrollInterval, scrollInterval);
