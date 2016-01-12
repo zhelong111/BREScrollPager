@@ -2,6 +2,9 @@
 自定义水平带缩放效果滚动列表<br/>
 <img src="https://github.com/zhelong111/BREScrollPager/blob/master/gif/test.gif"/>
 
+V1.1.0.4<br/>
+~解决xml视图填充问题
+
 V1.1.0.3<br/>
 1、新增OnPageChangeListener
 
