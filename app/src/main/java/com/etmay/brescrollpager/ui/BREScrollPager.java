@@ -12,7 +12,6 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,7 @@ import java.util.TimerTask;
 /**
  * Created by Bruce on 2016/1/9.
  */
-public class MyViewPager extends ViewGroup {
+public class BREScrollPager extends ViewGroup {
 
     private GestureDetector detector; // 手势识别器
     private Context ctx; // 上下文
@@ -64,7 +63,7 @@ public class MyViewPager extends ViewGroup {
         this.pagerTransformer = pagerTransformer;
     }
 
-    public MyViewPager(Context context, AttributeSet attrs) {
+    public BREScrollPager(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.ctx = context;
         init();
@@ -127,7 +126,7 @@ public class MyViewPager extends ViewGroup {
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2,
                                            float velocityX, float velocityY) {
-                        MyViewPager.this.velocityX = velocityX;
+                        BREScrollPager.this.velocityX = velocityX;
                         return false;
                     }
 

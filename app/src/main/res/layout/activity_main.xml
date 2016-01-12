@@ -13,7 +13,7 @@
           android:layout_height="match_parent"
           android:id="@+id/root2"/>
 
-    <com.etmay.brescrollpager.ui.MyViewPager
+    <com.etmay.brescrollpager.ui.BREScrollPager
         android:id="@+id/myPager"
         android:layout_width="match_parent"
         android:layout_height="380dp"
@@ -47,5 +47,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@mipmap/g3" />
-    </com.etmay.brescrollpager.ui.MyViewPager>
+    </com.etmay.brescrollpager.ui.BREScrollPager>
 </RelativeLayout>

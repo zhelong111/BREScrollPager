@@ -1,19 +1,17 @@
 package com.etmay.brescrollpager;
 
 import android.os.Bundle;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
-import com.etmay.brescrollpager.ui.MyViewPager;
+import com.etmay.brescrollpager.ui.BREScrollPager;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
 public class MainActivity extends AppCompatActivity {
 
-    private MyViewPager mPager;
+    private BREScrollPager mPager;
     private View root;
     private View root2;
     private int currColor;
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         root.setBackgroundColor(currColor);
         root2.setBackgroundColor(preColor);
 
-        mPager = (MyViewPager) findViewById(R.id.myPager);
+        mPager = (BREScrollPager) findViewById(R.id.myPager);
         mPager.startSchedule(1600);
 
         for (int i = 0; i < 50; i++) {
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         }
         final int color = colors[0];
         final int dc = colors[1] - color;
-        mPager.setPagerTransformer(new MyViewPager.PageTransformer() {
+        mPager.setPagerTransformer(new BREScrollPager.PageTransformer() {
             @Override
             public void transformPage(View page, float position) {
 //                ViewHelper.setAlpha(page, 1 - Math.abs(position) * (1f/4));
@@ -76,14 +74,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mPager.setOnItemClickListener(new MyViewPager.OnItemClickListener() {
+        mPager.setOnItemClickListener(new BREScrollPager.OnItemClickListener() {
             @Override
             public void onItemClicked(View itemView, int position) {
                 Toast.makeText(MainActivity.this, position + "", Toast.LENGTH_SHORT).show();
             }
         });
 
-        mPager.setOnPageChangeListener(new MyViewPager.OnPageChangeListener() {
+        mPager.setOnPageChangeListener(new BREScrollPager.OnPageChangeListener() {
             @Override
             public void onPageChanged(int position) {
                 ViewHelper.setAlpha(root2, 0.3f);
