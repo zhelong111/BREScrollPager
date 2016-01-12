@@ -12,6 +12,7 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,7 @@ public class MyViewPager extends ViewGroup {
     private int childHeight;
     private int childPadding = 160;
     private float velocityX = 0;
-    private static final int MIN_SCROLL_VELOCITY = 3000;
+    private static int MIN_SCROLL_VELOCITY = 1000;
     private Timer timer; // 滚动定时器
     private Handler handler;
     private int timerIndex; // 定时滚动到的view的index
@@ -78,6 +79,8 @@ public class MyViewPager extends ViewGroup {
     }
 
     private void init() {
+        MIN_SCROLL_VELOCITY *= getResources().getDisplayMetrics().density;
+        Log.e("ss", MIN_SCROLL_VELOCITY + "");
         timer = new Timer();
         handler = new Handler() {
             @Override
@@ -113,7 +116,7 @@ public class MyViewPager extends ViewGroup {
                                 pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
                             }
                         }
-                        Log.e("ss", "----onScroll-----  " + getOffset()) ;
+//                        Log.e("ss", "----onScroll-----  " + getOffset()) ;
                         return false;
                     }
 
@@ -155,9 +158,17 @@ public class MyViewPager extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int widthSpecSize =  MeasureSpec.getSize(widthMeasureSpec);
+        int heightSpecSize =  MeasureSpec.getSize(heightMeasureSpec);
+        setMeasuredDimension(widthSpecSize, heightSpecSize);
+
         childWidth = getWidth() - childPadding - getPaddingLeft() - getPaddingRight();
         childHeight = getHeight() - 0 - getPaddingTop() - getPaddingBottom();
+
+        measureChildren(widthMeasureSpec - childPadding, heightMeasureSpec);
+        setMeasuredDimension(widthSpecSize, heightSpecSize);
         initScaleX = (childWidth - childPadding / 2f) / childWidth;
         initScaleY = (childHeight - childPadding / 2f) / childHeight;
     }
@@ -171,12 +182,10 @@ public class MyViewPager extends ViewGroup {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         for (int i = 0; i < getChildCount(); i++) {
             View view = getChildAt(i);
-
             // 指定子View的位置 ，左、上、右、下，是指在ViewGroup坐标系中的位置
-
             int left = (getWidth() - childWidth)/2;
             int top = (getHeight() - childHeight)/2;
-            view.layout(left + i * childWidth, top, left + childWidth + i * childWidth,
+            view.layout(left + i * childWidth, top, left + childWidth +  i * childWidth,
                     top + childHeight);
 
             if (i != 0) {
@@ -208,7 +217,7 @@ public class MyViewPager extends ViewGroup {
                 }
                 int nextId = 0; // 记录下一个View的id
 //                if (Math.abs(myScroller.getCurrVelocity()) > 600) {
-                Log.e("ss", "---------" + velocityX) ;
+//                Log.e("ss", "---------" + velocityX) ;
                 if (Math.abs(velocityX) > MIN_SCROLL_VELOCITY) {
                     if (velocityX > MIN_SCROLL_VELOCITY) {
                         nextId = (currId - 1) <= 0 ? 0 : currId - 1;
@@ -363,7 +372,7 @@ public class MyViewPager extends ViewGroup {
                     pagerTransformer.transformPage(getChildAt(currChildIndex), getOffset());
                 }
             }
-            Log.e("ss", "----computeScroll-----  " + getOffset()) ;
+//            Log.e("ss", "----computeScroll-----  " + getOffset()) ;
 
             invalidate();
         }

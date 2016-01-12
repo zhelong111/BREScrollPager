@@ -1,6 +1,7 @@
 package com.etmay.brescrollpager;
 
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+//        ViewPager
     }
 
     private void initView() {
@@ -38,11 +40,14 @@ public class MainActivity extends AppCompatActivity {
         mPager = (MyViewPager) findViewById(R.id.myPager);
         mPager.startSchedule(1600);
 
-        for (int i = 0; i < 100; i++) {
-            ImageView iv = new ImageView(this);
-            iv.setImageResource(R.mipmap.g3);
-            iv.setTag(i);
-            mPager.addView(iv);
+        for (int i = 0; i < 50; i++) {
+//            ImageView iv = new ImageView(this);
+//            iv.setImageResource(R.mipmap.g3);
+//            iv.setTag(i);
+//            mPager.addView(iv);
+            View child = View.inflate(this, R.layout.item_img, null);
+            child.setTag(i);
+            mPager.addView(child);
         }
         final int color = colors[0];
         final int dc = colors[1] - color;
@@ -78,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         mPager.setOnPageChangeListener(new MyViewPager.OnPageChangeListener() {
             @Override
             public void onPageChanged(int position) {
@@ -93,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 alpha.start();
-
 
                 currColor = colors[position % colors.length];
                 root.setBackgroundColor(currColor);
