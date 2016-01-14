@@ -17,8 +17,11 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnticipateOvershootInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.etmay.brescrollpager.R;
+import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
@@ -68,6 +71,15 @@ public class BREScrollPager extends ViewGroup {
         void onStart();
         void onLoading();
         void onFinish();
+    }
+    // 是否显示添加View的入场动画
+    private boolean showAddViewAnimation = true;
+    public boolean isShowAddViewAnimation() {
+        return showAddViewAnimation;
+    }
+
+    public void setShowAddViewAnimation(boolean showAddViewAnimation) {
+        this.showAddViewAnimation = showAddViewAnimation;
     }
 
     public void setLoadMoreListener(LoadMoreListener loadMoreListener) {
@@ -229,6 +241,9 @@ public class BREScrollPager extends ViewGroup {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (getChildCount() == 0) {
+            return true;
+        }
         detector.onTouchEvent(event); // 指定手势识别器去处理滑动事件
         // 还是得自己处理一些逻辑
         switch (event.getAction()) {
@@ -345,7 +360,6 @@ public class BREScrollPager extends ViewGroup {
         // 视图移动,太直接了，没有动态过程
         // scrollTo(currId * getWidth(), 0);
         // 要移动的距离 = 最终的位置 - 现在的位置
-//        int distanceX = currId * getWidth() - getScrollX();
         int distanceX = currId * childWidth - getScrollX();
         // 设置运行的时间
         myScroller.startScroll(getScrollX(), 0, distanceX, 0);
@@ -365,6 +379,12 @@ public class BREScrollPager extends ViewGroup {
         invalidate();
     }
 
+    public void startFirstLoading() {
+        if (loadMoreListener != null && currId == 0) {
+            loadMoreData();
+        }
+    }
+
     private void loadMoreData() {
         if (loadingState != READY) {
             return;
@@ -379,6 +399,7 @@ public class BREScrollPager extends ViewGroup {
                 }
                 if (loadingView.getParent() == null) {
                     addView(loadingView);
+                    invalidate();
                 }
                 if (loadMoreListener != null) {
                     loadMoreListener.onStart();
@@ -389,6 +410,7 @@ public class BREScrollPager extends ViewGroup {
             protected String doInBackground(String... params) {
                 loadingState = LOADING;
                 if (loadMoreListener != null) {
+                    SystemClock.sleep(3000);
                     loadMoreListener.onLoading();
                 }
                 return null;
@@ -403,6 +425,7 @@ public class BREScrollPager extends ViewGroup {
                     if (isScheduleScroll) {
                         timerIndex = timerIndex > 0 ? timerIndex - 1 : 0;
                     }
+                    invalidate();
                 }
                 if (loadMoreListener != null) {
                     loadMoreListener.onFinish();
@@ -477,6 +500,31 @@ public class BREScrollPager extends ViewGroup {
 
             invalidate();
         }
+    }
+
+    @Override
+    public void onViewAdded(View child) {
+        super.onViewAdded(child);
+        if (showAddViewAnimation) {
+            if (getChildCount() == 1 && loadingView == null) {
+                AnimatorSet set = new AnimatorSet();
+                set.playTogether(
+                        ObjectAnimator.ofFloat(child, "translationY", -400, 0),
+                        ObjectAnimator.ofFloat(child, "alpha", 1, 0.25f, 1)
+                );
+                set.setDuration(2 * 1000).setInterpolator(new AnticipateOvershootInterpolator());
+                set.start();
+            } else {
+                ObjectAnimator animator = ObjectAnimator.ofFloat(child, "alpha", 0, 1).setDuration(1000);
+                animator.setInterpolator(new DecelerateInterpolator());
+                animator.start();
+            }
+        }
+    }
+
+    @Override
+    public void onViewRemoved(View child) {
+        super.onViewRemoved(child);
     }
 
     public interface PageTransformer {

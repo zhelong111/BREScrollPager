@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 import com.etmay.brescrollpager.ui.BREScrollPager;
 import com.nineoldandroids.animation.ObjectAnimator;
@@ -38,12 +39,17 @@ public class MainActivity extends AppCompatActivity {
 
         mPager = (BREScrollPager) findViewById(R.id.myPager);
 //        mPager.startSchedule(1600);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 3; i++) {
+                    View child = View.inflate(MainActivity.this, R.layout.item_img, null);
+                    child.setTag(i);
+                    mPager.addView(child);
+                }
+            }
+        }, 3300);
 
-        for (int i = 0; i < 10; i++) {
-            View child = View.inflate(this, R.layout.item_img, null);
-            child.setTag(i);
-            mPager.addView(child);
-        }
 //        mPager.setCurrItem(1);
         // 设置Listener之后才有自动
         mPager.setLoadMoreListener(new BREScrollPager.LoadMoreListener() {
@@ -54,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onLoading() {
+                // TODO do some task maybe in thread.
 
             }
 
@@ -62,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "onFinish", Toast.LENGTH_SHORT).show();
             }
         });
-
+        mPager.startFirstLoading();
 
         final int color = colors[0];
         final int dc = colors[1] - color;
