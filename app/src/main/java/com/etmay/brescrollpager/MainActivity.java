@@ -37,18 +37,32 @@ public class MainActivity extends AppCompatActivity {
         root2.setBackgroundColor(preColor);
 
         mPager = (BREScrollPager) findViewById(R.id.myPager);
-        mPager.startSchedule(1600);
+//        mPager.startSchedule(1600);
 
-        for (int i = 0; i < 50; i++) {
-//            ImageView iv = new ImageView(this);
-//            iv.setImageResource(R.mipmap.g3);
-//            iv.setTag(i);
-//            mPager.addView(iv);
+        for (int i = 0; i < 10; i++) {
             View child = View.inflate(this, R.layout.item_img, null);
             child.setTag(i);
             mPager.addView(child);
         }
-        mPager.setCurrItem(1);
+//        mPager.setCurrItem(1);
+        // 设置Listener之后才有自动
+        mPager.setLoadMoreListener(new BREScrollPager.LoadMoreListener() {
+            @Override
+            public void onStart() {
+                Toast.makeText(getApplicationContext(), "onStart", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLoading() {
+
+            }
+
+            @Override
+            public void onFinish() {
+                Toast.makeText(getApplicationContext(), "onFinish", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         final int color = colors[0];
         final int dc = colors[1] - color;

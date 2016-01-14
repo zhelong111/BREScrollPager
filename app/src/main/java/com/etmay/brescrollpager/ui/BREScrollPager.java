@@ -6,6 +6,7 @@ package com.etmay.brescrollpager.ui;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -17,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.etmay.brescrollpager.R;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.view.ViewHelper;
 
@@ -54,6 +56,23 @@ public class BREScrollPager extends ViewGroup {
     private boolean hasLayoutOk;
     private static final int MSG_SCHEDULE_NEXT_PAGE = 1; // 定时滚动到下一个页面
     private static final int MSG_JUMP_TO = 2; // 跳转到指定页面
+
+    private View loadingView;
+    private LoadMoreListener loadMoreListener;
+    private static final int READY = 0;
+    private static final int START = 1;
+    private static final int LOADING = 2;
+    private static final int FINISH = 3;
+    private int loadingState = READY;
+    public interface LoadMoreListener {
+        void onStart();
+        void onLoading();
+        void onFinish();
+    }
+
+    public void setLoadMoreListener(LoadMoreListener loadMoreListener) {
+        this.loadMoreListener = loadMoreListener;
+    }
 
     public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
@@ -199,10 +218,9 @@ public class BREScrollPager extends ViewGroup {
             view.layout(left + i * childWidth, top, left + childWidth +  i * childWidth,
                     top + childHeight);
 
-            if (i != 0) {
+            if (i != currId) {
                 ViewHelper.setScaleX(view, initScaleX);
                 ViewHelper.setScaleY(view, initScaleY);
-//                ViewHelper.setAlpha(view, initAlpha);
             }
         }
         hasLayoutOk = true;
@@ -306,13 +324,16 @@ public class BREScrollPager extends ViewGroup {
      */
     private void moveToDest(int nextId) {
 
-        boolean shouldAnim = (currId != nextId);
+        boolean shouldAnim = (currId != nextId) && nextId < getChildCount();
+
 //        shouldAnim = false;
         View child;
         if (shouldAnim) {
             child = getChildAt(currId);
-            ObjectAnimator.ofFloat(child, "scaleX", 1f, initScaleX).setDuration(300).start();
-            ObjectAnimator.ofFloat(child, "scaleY", 1f, initScaleY).setDuration(300).start();
+            if (child != null) {
+                ObjectAnimator.ofFloat(child, "scaleX", 1f, initScaleX).setDuration(300).start();
+                ObjectAnimator.ofFloat(child, "scaleY", 1f, initScaleY).setDuration(300).start();
+            }
         }
 
         // nextId的合理范围是，nextId >=0 && nextId <= getChildCount()-1
@@ -331,12 +352,64 @@ public class BREScrollPager extends ViewGroup {
 
         if (shouldAnim) {
             child = getChildAt(currId);
-            ObjectAnimator.ofFloat(child, "scaleX", initScaleX, 1f).setDuration(300).start();
-            ObjectAnimator.ofFloat(child, "scaleY", initScaleY, 1f).setDuration(300).start();
+            if (child != null) {
+                ObjectAnimator.ofFloat(child, "scaleX", initScaleX, 1f).setDuration(300).start();
+                ObjectAnimator.ofFloat(child, "scaleY", initScaleY, 1f).setDuration(300).start();
+            }
+        }
+        if (loadMoreListener != null && currId == getChildCount() - 1) {
+            loadMoreData();
         }
 
         // 刷新视图
         invalidate();
+    }
+
+    private void loadMoreData() {
+        if (loadingState != READY) {
+            return;
+        }
+        loadingState = START;
+        new AsyncTask<String, Integer, String>() {
+            @Override
+            protected void onPreExecute() {
+                if (loadingView == null) {
+                    loadingView = View.inflate(getContext(), R.layout.bre_loading, null);
+                    loadingView.setLayoutParams(new LayoutParams(-1, -1));
+                }
+                if (loadingView.getParent() == null) {
+                    addView(loadingView);
+                }
+                if (loadMoreListener != null) {
+                    loadMoreListener.onStart();
+                }
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                loadingState = LOADING;
+                if (loadMoreListener != null) {
+                    loadMoreListener.onLoading();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                if (loadingView != null && loadingView.getParent() != null) {
+                    removeView(loadingView);
+                    loadingView = null;
+//                    currId = currId > 0 ? currId - 1 : 0;
+                    if (isScheduleScroll) {
+                        timerIndex = timerIndex > 0 ? timerIndex - 1 : 0;
+                    }
+                }
+                if (loadMoreListener != null) {
+                    loadMoreListener.onFinish();
+                }
+                loadingState = READY;
+            }
+        }.execute();
     }
 
     public void setCurrItem(final int itemIndex) {
