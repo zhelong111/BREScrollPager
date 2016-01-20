@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
+
 import com.etmay.brescrollpager.ui.BREScrollPager;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;

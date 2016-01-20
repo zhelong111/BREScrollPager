@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Adapter;
 
 import com.etmay.brescrollpager.R;
 import com.nineoldandroids.animation.AnimatorSet;
@@ -74,6 +75,15 @@ public class BREScrollPager extends ViewGroup {
     }
     // 是否显示添加View的入场动画
     private boolean showAddViewAnimation = true;
+    private Adapter adapter;
+    public Adapter getAdapter() {
+        return adapter;
+    }
+
+    public void setAdapter(Adapter adapter) {
+        this.adapter = adapter;
+    }
+
     public boolean isShowAddViewAnimation() {
         return showAddViewAnimation;
     }
@@ -140,7 +150,9 @@ public class BREScrollPager extends ViewGroup {
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
-                        if (onItemClickListener != null) {
+                        if (onItemClickListener != null
+                                && (!(currId == getChildCount() - 1 && loadingState != READY))) // 当前页不是Loading状态
+                        {
                             onItemClickListener.onItemClicked(getChildAt(getCurrItem()), getCurrItem());
                         }
                         return false;
